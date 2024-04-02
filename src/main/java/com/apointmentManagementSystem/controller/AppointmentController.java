@@ -1,5 +1,7 @@
 	package com.apointmentManagementSystem.controller;
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apointmentManagementSystem.dto.AppointmentRequestDto;
@@ -31,10 +34,10 @@ public class AppointmentController {
 
 	@GetMapping
 	@PreAuthorize("hasAuthority('APPOINTMENT::READ')")
-	public ResponseEntity<?> getAllApointments() {
+	public ResponseEntity<?> getAllApointments(@RequestParam(required = false , name = "from") LocalDate fromDate , @RequestParam(required = false , name = "to") LocalDate toDate,  @RequestAttribute("X-user-id") int loggedInUser) {
 		try {
 
-			return ResponseEntity.ok(new MessageResponseDto(SuccessMessageConstant.APPOINTMENT_FETCHED, appointmentService.getAllAppointment(), 200));
+			return ResponseEntity.ok(new MessageResponseDto(SuccessMessageConstant.APPOINTMENT_FETCHED, appointmentService.getAllAppointment(fromDate, toDate, loggedInUser), 200));
 		} catch (Exception e) {
 			return ResponseEntity.badRequest().body(new ErrorMessageResponseDto(e.getMessage(), 400));
 		}

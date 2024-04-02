@@ -1,12 +1,12 @@
 package com.apointmentManagementSystem.serviceImpl;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.apointmentManagementSystem.IDtos.AppointmentResponseIDto;
 import com.apointmentManagementSystem.dto.AppointmentRequestDto;
 import com.apointmentManagementSystem.dto.AppointmentResponseDto;
 import com.apointmentManagementSystem.entity.AppointmentEntity;
@@ -111,9 +111,25 @@ public class AppointmentServiceImpl implements AppointmentService{
 	}
 
 	@Override
-	public List<AppointmentResponseIDto> getAllAppointment() {
+	public List<?> getAllAppointment(LocalDate fromDate , LocalDate toDate , int loggedInUser) {
+		User getUser = userRepository.findByIdAndIsActiveTrue(loggedInUser).orElseThrow(() -> new ResourceNotFoundException(ErrorMessageConstant.USER_NOT_EXIST));
 		
-		return appointmentRepository.findAllByIsActiveTrue();
+		if(toDate == null) {
+			toDate = LocalDate.now();
+		}
+		if(fromDate == null) {
+			fromDate = LocalDate.now().minusMonths(3);
+		}
+		
+		if(getUser.getRole().getName().equals("MANAGER")) {
+		return appointmentRepository.findAllByManagerIdAndIsActiveTrue(loggedInUser);
+		}
+		else if(getUser.getRole().getName().equals("DEVELOPER")) {
+			
+			return appointmentRepository.getAllApointmentOfUser(fromDate, toDate.plusDays(1), loggedInUser);
+		}
+		
+		return null;
 	}
 
 	@Override
